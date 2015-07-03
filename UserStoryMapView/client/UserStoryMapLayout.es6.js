@@ -4,49 +4,42 @@ let Node       = famous.core.Node
 let DOMElement = famous.domRenderables.DOMElement
 let Scene      = famous.core.Scene
 
-this.cards = [] // storing temporary "cards" here to lay them out.
-let global = this
+cards = [] // storing temporary "cards" here to lay them out.
 
-class BetterNode extends Node {
-    constructor() {
-        super()
+Node.prototype.getPositionFrom = function getPositionFrom (ancestor) {
+    var position = new Float32Array(Array.prototype.slice.call(this.getPosition()));
+    var currentParent = this.getParent();
+    var parentPosition;
+
+    if (!(ancestor instanceof Node))
+        throw new Error(''+ancestor+' is not an instance of Node.');
+
+    // Go through all the nodes up through the ancestor.
+    while (currentParent && currentParent !== ancestor
+        // stop at the scene node.
+        && !(currentParent instanceof Scene)) {
+
+        parentPosition = currentParent.getPosition();
+
+        position[0] += parentPosition[0];
+        position[1] += parentPosition[1];
+        position[2] += parentPosition[2];
+
+        currentParent = currentParent.getParent();
     }
 
-    getPositionFrom(ancestor) {
-        var position = this.getPosition()
-        var currentParent = this._parent
-        var parentPosition
+    // if we reached null a null _parent and didn't find the target ancestor.
+    if (!currentParent)
+        throw new Error('Null parent reached, but '+ancestor+' is not an ancestor of this Node.');
 
-        if (!(ancestor instanceof Node))
-            throw new Error(''+ancestor+' is not an instance of Node.')
+    // or if we reached the scene node and didn't find the target ancestor.
+    if (currentParent !== ancestor)
+        throw new Error('Scene node reached, but '+ancestor+' is not an ancestor of this Node.');
 
-        // Go through all the nodes up through the ancestor.
-        while (currentParent && currentParent !== ancestor) {
-            parentPosition = currentParent.getPosition()
+    return position;
+};
 
-            position[0] += parentPosition[0]
-            position[1] += parentPosition[1]
-            position[2] += parentPosition[2]
-
-            currentParent = currentParent._parent
-        }
-
-        if (!currentParent)
-            throw new Error(''+ancestor+' is not an ancestor of this '+this)
-
-        return position
-    }
-    // TEST for getScenePosition()
-    //let Engine = famous.core.FamousEngine;
-    //var scene = Engine.createScene('.scene')
-    //var node1 = scene.addChild(new BetterNode).setPosition(10,0,0)
-    //var node2 = node1.addChild(new BetterNode).setPosition(20,0,0)
-    //var node3 = node2.addChild(new BetterNode).setPosition(5,0,0)
-    //var pos = node3.getPositionFrom(node2)
-    //console.log(pos)
-}
-
-class UserStoryMapLayout extends BetterNode {
+class UserStoryMapLayout extends Node {
     constructor() {
         super()
         this.columnWidth    = 200 + 20
@@ -85,7 +78,7 @@ class UserStoryMapLayout extends BetterNode {
             if (numberOfLevels > 0) {
                 for (let i=0, len1=currentLevelItems.length; i<len1; i+=1) {
                     let currentItem = currentLevelItems[i]
-                    let currentLevelLayoutNode = (new BetterNode())
+                    let currentLevelLayoutNode = (new Node())
                         .setOrigin(0.5,0.5)
                         .setAlign(0,0)
                         .setMountPoint(0,0)
@@ -96,16 +89,16 @@ class UserStoryMapLayout extends BetterNode {
                      * the layout spaces, shared globally for the entry point to manipulate.
                      * Cards will be added externally.
                      */
-                    let cardNode = global.scene.addChild(new BetterNode)
+                    let cardNode = scene.addChild(new Node)
                         .setOrigin(0.5,0.5)
                         .setAlign(0,0)
                         .setMountPoint(0,0)
                         .setSizeMode('absolute', 'absolute')
                         .setAbsoluteSize(self.columnWidth,self.rowHeight)
                     let card = new DOMElement(cardNode, {
-                        content: `<div style="width: 100%; height: 100%; border: 10px solid white; background: ${colors[numberOfLevels-1]}"></div>`
+                        content: `<div style="width: 100%; height: 100%; outline: 10px solid red; background: ${colors[numberOfLevels-1]}"></div>`
                     })
-                    global.cards.push(cardNode)
+                    cards.push(cardNode)
                     cardNode.goToNode = currentLevelLayoutNode
 
                     new DOMElement(currentLevelLayoutNode, {
@@ -164,6 +157,7 @@ class UserStoryMapLayout extends BetterNode {
                     currentLevelLayoutNode.setPosition(
                         positionX, positionY, 0
                     )
+
                 }
             }
 
@@ -194,4 +188,3 @@ class UserStoryMapLayout extends BetterNode {
 }
 
 this.UserStoryMapLayout = UserStoryMapLayout
-this.BetterNode = BetterNode

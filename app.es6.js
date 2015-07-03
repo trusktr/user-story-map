@@ -5,6 +5,7 @@ if (Meteor.isClient) {
         let Engine         = famous.core.FamousEngine;
         let Camera         = famous.components.Camera
         let Transitionable = famous.transitions.Transitionable
+        let Position       = famous.components.Position
 
         // just a node structure representing the map layout spaces.
         class MapNode {
@@ -52,10 +53,12 @@ if (Meteor.isClient) {
         // inside the layout.
         console.log('number of cards:', cards.length)
         for (let i=0, len=cards.length; i<len; i+=1) {
-            //let goToPosition = cards[i].goToNode.getPositionFrom(scene)
-            //cards[i].setPosition(goToPosition[0],goToPosition[1],goToPosition[2])
-            //console.log(cards[i].getPosition() === cards[i].goToNode.getPositionFrom(scene))
-            console.log('position of node from scene', cards[i].goToNode.getPositionFrom(scene))
+            let goToPosition = cards[i].goToNode.getPositionFrom(scene)
+            let cardPosition = new Position(cards[i])
+            cardPosition.set(goToPosition[0],goToPosition[1],goToPosition[2], {
+                duration: 5000,
+                curve: 'easeInOut'
+            })
         }
 
         let cameraNode = scene.addChild()
