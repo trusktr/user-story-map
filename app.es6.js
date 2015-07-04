@@ -6,6 +6,8 @@ if (Meteor.isClient) {
         let Camera         = famous.components.Camera
         let Transitionable = famous.transitions.Transitionable
         let Position       = famous.components.Position
+        let Rotation       = famous.components.Rotation
+        let Size           = famous.components.Size
 
         // just a node structure representing the map layout spaces.
         class MapNode {
@@ -33,7 +35,6 @@ if (Meteor.isClient) {
             return currentLevelNodes
         }
 
-        Engine.init()
         let scene = Engine.createScene('.scene')
         this.scene = scene // share the scene across the app.
 
@@ -52,14 +53,67 @@ if (Meteor.isClient) {
         // TODO: use the real cards. For now the current sample they are added
         // inside the layout.
         console.log('number of cards:', cards.length)
+        let rotationPositionAnimations = []
+        let sizeAnimations = []
         for (let i=0, len=cards.length; i<len; i+=1) {
-            let goToPosition = cards[i].goToNode.getPositionFrom(scene)
-            let cardPosition = new Position(cards[i])
-            cardPosition.set(goToPosition[0],goToPosition[1],goToPosition[2], {
-                duration: 5000,
-                curve: 'easeInOut'
+            let card = cards[i]
+            let goToPosition = card.goToNode.getPositionFrom(scene)
+            let cardPosition = new Position(card)
+            let cardRotation = new Rotation(card)
+
+            let sizeTransition
+            let sizeY
+            let id
+
+            if (card.goToNode.getAbsoluteSize()[0] !== card.getAbsoluteSize()[0]) {
+                sizeTransition = new Transitionable(card.getAbsoluteSize()[0])
+                sizeY = card.getAbsoluteSize()[1]
+
+                id = card.addComponent({
+                    onUpdate: () => {
+                        card.setAbsoluteSize(sizeTransition.get(), sizeY, 0)
+                        if (sizeTransition.isActive()) {
+                            card.requestUpdateOnNextTick(id)
+                        }
+                    }
+                })
+
+                sizeAnimations.push(function(done) {
+                    card.requestUpdateOnNextTick(id)
+
+                    sizeTransition.set(card.goToNode.getAbsoluteSize()[0], {
+                    //sizeTransition.set(2000, {
+                        duration: 1000, curve: 'inOutExpo' }, done)
+                })
+            }
+
+            rotationPositionAnimations.push((done) => {
+                cardPosition.set(goToPosition[0],goToPosition[1],goToPosition[2]+10, {
+                    duration: 2000,
+                    curve: 'inOutExpo'
+                }, done)
+            })
+
+            rotationPositionAnimations.push((done) => {
+                cardRotation.set(0,0,0, {
+                    duration: 2000,
+                    curve: 'inOutExpo'
+                }, done)
             })
         }
+
+        setTimeout(function() {
+            //async.series([
+                //(done) => {
+                    async.parallel(rotationPositionAnimations/*, done*/)
+                //},
+                //(done) => {
+                    setTimeout(() => {
+                        async.parallel(sizeAnimations/*, done*/)
+                    }, 2100)
+                //}
+            //])
+        }, 3000)
 
         let cameraNode = scene.addChild()
         let camera = new Camera(cameraNode)
@@ -79,6 +133,8 @@ if (Meteor.isClient) {
         })
         cameraNode.requestUpdateOnNextTick(cameraAnimation)
 
+
+        Engine.init()
     })
 }
 

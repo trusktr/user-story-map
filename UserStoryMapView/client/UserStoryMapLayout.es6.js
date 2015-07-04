@@ -95,15 +95,25 @@ class UserStoryMapLayout extends Node {
                         .setMountPoint(0,0)
                         .setSizeMode('absolute', 'absolute')
                         .setAbsoluteSize(self.columnWidth,self.rowHeight)
+                        .setPosition(
+                            Math.ceil(Math.random()*window.innerWidth*2),
+                            Math.ceil(Math.random()*window.innerHeight*2),
+                            Math.ceil(Math.random()*1000*2)
+                        )
+                        .setRotation(
+                            Math.random()*Math.PI*2,
+                            Math.random()*Math.PI*2,
+                            Math.random()*Math.PI*2
+                        )
                     let card = new DOMElement(cardNode, {
-                        content: `<div style="width: 100%; height: 100%; outline: 10px solid red; background: ${colors[numberOfLevels-1]}"></div>`
+                        content: `<div style="width: 100%; height: 100%; border: 10px solid white; background: ${colors[numberOfLevels-1]}"></div>`
                     })
                     cards.push(cardNode)
                     cardNode.goToNode = currentLevelLayoutNode
 
-                    new DOMElement(currentLevelLayoutNode, {
-                        content: `<div style="width: 100%; height: 100%; border: 10px solid white; background: ${colors[numberOfLevels-1]}; opacity: 0.5"></div>`
-                    })
+                    //new DOMElement(currentLevelLayoutNode, {
+                        //content: `<div style="width: 100%; height: 100%; border: 10px solid white; background: ${colors[numberOfLevels-1]}; opacity: 0.5"></div>`
+                    //})
 
                     currentLevelLayoutNodes.push(currentLevelLayoutNode)
 
