@@ -83,7 +83,8 @@ if (Meteor.isClient) {
 
                     sizeTransition.set(card.goToNode.getAbsoluteSize()[0], {
                     //sizeTransition.set(2000, {
-                        duration: 1000, curve: 'inOutExpo' }, done)
+                        duration: 0, curve: 'inOutExpo' }, done)
+                        //duration: 1000, curve: 'inOutExpo' }, done)
                 })
             }
 
