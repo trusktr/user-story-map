@@ -102,18 +102,16 @@ if (Meteor.isClient) {
             })
         }
 
-        setTimeout(function() {
+        //setTimeout(function() {
             //async.series([
                 //(done) => {
                     async.parallel(rotationPositionAnimations/*, done*/)
                 //},
                 //(done) => {
-                    setTimeout(() => {
-                        async.parallel(sizeAnimations/*, done*/)
-                    }, 2100)
+                    async.parallel(sizeAnimations/*, done*/)
                 //}
             //])
-        }, 3000)
+        //}, 3000)
 
         let cameraNode = scene.addChild()
         let camera = new Camera(cameraNode)
